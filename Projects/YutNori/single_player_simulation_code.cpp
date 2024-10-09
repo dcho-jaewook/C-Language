@@ -15,7 +15,6 @@ struct cell {
 
 cell arr[35];
 
-// Initializing Function
 void SetList()
 {
     prob_list[0] = 4 * pow(front, 3) * pow(back, 1); // 도
@@ -48,8 +47,7 @@ void SetArr()
 }
 
 // 도, 개, 걸, 윷, 모의 갯수를 인자로 입력
-// 각 조합이 특정 횟수만큼 등장할 확률을 반환
-// ex) 도, 개, 걸, 윷, 모가 각각 1, 1, 0, 0, 1번 등장할 확률은 xx%
+// 확률을 반환
 long double calc(int Do, int Gae, int Gul, int Yut, int Mo)
 {
     return pow(prob_list[0], Do) * pow(prob_list[1], Gae) * pow(prob_list[2], Gul) * pow(prob_list[3], Yut) * pow(prob_list[4], Mo);
@@ -98,8 +96,6 @@ int move(int cur, int moves)
         return cur + moves;
 }
 
-// 깊이 우선 탐색을 통해 현재 포지션에서 가능한 모든 결과 조사
-// is_prev 변수를 통해 윷과 모가 나왔을 때 "횟수 페널티 없이 다시 던지기" 구현
 void DFS(int cur, int Do, int Gae, int Gul, int Yut, int Mo, int cnt, bool is_prev)
 {
     if (cur > 21 && cur < 100)
@@ -127,7 +123,7 @@ int main()
 {
     int i, j, k;
     int pos, moves, ans_num = -1, ans_sum = 0;
-    long double ans_prob, ans_prob_exact;
+    long double ans_prob;
     
     SetList();
     
@@ -142,12 +138,22 @@ int main()
         scanf("%d", &pos);
     }
     
+    printf("Please input the number of moves: ");
+    scanf("%d", &moves);
+    while (true)
+    {
+        if (moves >= 1)
+            break;
+            
+        printf("- Invalid!\n- Please input a correct number of moves to finish the game (positive integer): ");
+        scanf("%d", &moves);
+    }
     
-    ans_prob_exact = ans_prob = 0.0;
     
     for (i = 0; i <= idx; i++)
     {
         SetArr();
+        //printf("\n------------------------------------------------------------------------------------\nChecking idx: %d...\n", idx_list[i]);
         st = idx_list[i];
         DFS(idx_list[i], 0, 0, 0, 0, 0, 0, false);
         
@@ -158,14 +164,24 @@ int main()
                 j = 30;
                 continue;
             }
-            if (pos == idx_list[i])
+            //printf("Turn: %2d\tCnt: %6d\tProb: %.30Lf\n", j, arr[j].num, arr[j].prob);
+            if (pos == idx_list[i] && j == moves)
             {
                 ans_num = arr[j].num;
-                ans_prob += arr[j].prob;
-                
-                printf("\n- %d move(s): %.5LF(%.3LF%%)", j, arr[j].prob, arr[j].prob*100);
+                ans_prob = arr[j].prob;
             }
         }
     }
+    
+    //printf("\n------------------------------------------------------------------------------------\n");
+    
+    if (ans_num == -1)
+        printf("\n\nSorry, there's no possible way to finish the game in %d move(s) at position %d.\n", moves, pos);
+    else
+    {
+        //printf("\n\nAt position %d, probability of finishing the game in %d move(s) is %.5LF(%.3LF%%).\n", pos, moves, ans_prob, ans_prob*100);
+        printf("\nProbability: %.5LF(%.3LF%%).\n", ans_prob, ans_prob*100);
+    }
+    // 1st argument: starting point
     return 0;
 }
